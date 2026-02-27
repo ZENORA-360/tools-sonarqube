@@ -1,0 +1,19 @@
+sonarqube.zenora360.com {
+    reverse_proxy sonarqube:9000
+
+    # Sécurité et optimisation
+    encode gzip
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    }
+
+    # Redirection HTTP → HTTPS
+    @nothttps {
+        protocol http
+    }
+    redir @nothttps https://{host}{uri}
+}
