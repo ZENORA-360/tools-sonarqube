@@ -2,7 +2,8 @@ sonarqube.zenora360.com {
     reverse_proxy sonarqube:9000
 
     # Sécurité et optimisation
-    encode gzip
+    encode gzip brotli
+    
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
@@ -15,5 +16,12 @@ sonarqube.zenora360.com {
     @nothttps {
         protocol http
     }
+
     redir @nothttps https://{host}{uri}
+
+    @largebody {
+        header Content-Length > 50M
+    }
+    respond @largebody 413
+
 }
