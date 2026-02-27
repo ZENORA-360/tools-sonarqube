@@ -1,15 +1,36 @@
-sonarqube.zenora360.com {
-    reverse_proxy sonarqube:9000
+{
+    email contact@zenora360.com
+    auto_https on
+    servers {
+        protocols h1 h2 h3
+    }
+}
 
-    # Sécurité et optimisation
+sonarqube.zenora360.com {
     encode gzip brotli
+
+    reverse_proxy sonarqube:9000 {
+        health_uri /api/system/status
+        health_interval 30s
+        health_timeout 5s
+
+        transport http {
+            read_timeout 60s
+            write_timeout 60s
+        }
+    }
+
+    tls {
+        protocols tls1.2 tls1.3
+    }
     
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
+        X-Frame-Options "SAMEORIGIN"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        -Server
     }
 
     # Redirection HTTP → HTTPS
@@ -24,4 +45,12 @@ sonarqube.zenora360.com {
     }
     respond @largebody 413
 
+    log {
+        output file /data/access.log {
+            roll_size 10mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+    }
 }
